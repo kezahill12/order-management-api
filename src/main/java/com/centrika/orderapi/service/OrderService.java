@@ -23,12 +23,16 @@ public class OrderService {
     private final ProductRepository productRepository;
 
     public OrderService(OrderRepository orderRepository, CustomerRepository customerRepository,
-                         ProductRepository productRepository) {
+                        ProductRepository productRepository) {
         this.orderRepository = orderRepository;
         this.customerRepository = customerRepository;
         this.productRepository = productRepository;
     }
 
+    // readOnly = true keeps the persistence context open while the lazy
+    // items/product associations are mapped into the response, and lets
+    // Hibernate skip dirty-checking on a pure read path.
+    @Transactional(readOnly = true)
     public Page<OrderResponse> findOrders(OrderStatus status, Long customerId, Instant from, Instant to, Pageable pageable) {
         Specification<Order> spec = Specification
                 .where(OrderSpecifications.hasStatus(status))
@@ -42,6 +46,7 @@ public class OrderService {
         return orderRepository.findAll(spec, pageable).map(this::toResponse);
     }
 
+    @Transactional(readOnly = true)
     public OrderResponse findById(Long id) {
         Order order = orderRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Order " + id + " not found"));
@@ -75,7 +80,7 @@ public class OrderService {
             if (product.getStockQuantity() < itemReq.getQuantity()) {
                 throw new InsufficientStockException(
                         "Insufficient stock for product " + product.getSku() +
-                        " (requested " + itemReq.getQuantity() + ", available " + product.getStockQuantity() + ")");
+                                " (requested " + itemReq.getQuantity() + ", available " + product.getStockQuantity() + ")");
             }
 
             product.setStockQuantity(product.getStockQuantity() - itemReq.getQuantity());
