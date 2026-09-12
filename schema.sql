@@ -10,13 +10,17 @@
 -- at all). A CHECK constraint can be dropped and re-added in a single
 -- migration with no table rewrite, which matters for a system that
 -- will evolve tier/status values over time.
+--
+-- Values are stored uppercase to match the Java enum constants written
+-- by @Enumerated(EnumType.STRING). The two must stay in sync, or
+-- Hibernate cannot round-trip the column.
 
 CREATE TABLE customers (
     id          BIGSERIAL PRIMARY KEY,
     name        VARCHAR(255) NOT NULL,
     email       VARCHAR(255) NOT NULL UNIQUE,
     region      VARCHAR(100) NOT NULL,
-    tier        VARCHAR(20)  NOT NULL CHECK (tier IN ('standard', 'premium', 'enterprise')),
+    tier        VARCHAR(20)  NOT NULL CHECK (tier IN ('STANDARD', 'PREMIUM', 'ENTERPRISE')),
     created_at  TIMESTAMPTZ  NOT NULL DEFAULT now(),
     updated_at  TIMESTAMPTZ  NOT NULL DEFAULT now()
 );
@@ -38,7 +42,7 @@ CREATE TABLE orders (
     id           BIGSERIAL PRIMARY KEY,
     customer_id  BIGINT NOT NULL REFERENCES customers(id),
     status       VARCHAR(20) NOT NULL
-                 CHECK (status IN ('pending','processing','shipped','delivered','cancelled')),
+                 CHECK (status IN ('PENDING','PROCESSING','SHIPPED','DELIVERED','CANCELLED')),
     created_at   TIMESTAMPTZ NOT NULL DEFAULT now(),
     updated_at   TIMESTAMPTZ NOT NULL DEFAULT now()
 );
