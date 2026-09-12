@@ -1,0 +1,26 @@
+spring:
+  application:
+    name: order-api
+  datasource:
+    url: ${SPRING_DATASOURCE_URL}
+    username: ${SPRING_DATASOURCE_USERNAME}
+    password: ${SPRING_DATASOURCE_PASSWORD}
+    hikari:
+      maximum-pool-size: 20
+      minimum-idle: 5
+  jpa:
+    hibernate:
+      ddl-auto: validate   # schema.sql is the source of truth, not Hibernate auto-DDL
+    open-in-view: false    # avoid lazy-loading surprises leaking DB work into the view layer
+    properties:
+      hibernate:
+        jdbc:
+          batch_size: 25
+        default_batch_fetch_size: 25
+
+server:
+  port: 8080
+
+logging:
+  level:
+    org.hibernate.SQL: DEBUG
